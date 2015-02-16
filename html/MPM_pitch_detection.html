@@ -1,0 +1,210 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>MPM_pitch_detection</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-02-15"><meta name="DC.source" content="MPM_pitch_detection.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Matlab Implementation of MPM pitch detection algorithm  %%</a></li><li><a href="#3">Documentation</a></li><li><a href="#4">Input</a></li><li><a href="#5">Output</a></li><li><a href="#8">initialize parameters and vectors</a></li><li><a href="#9">get a sample</a></li><li><a href="#10">calculate NSDF (normalized square difference function)</a></li><li><a href="#11">find local maxima</a></li><li><a href="#12">find pitch and fundamental frequency</a></li></ul></div><pre class="codeinput"><span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+</pre><h2>Matlab Implementation of MPM pitch detection algorithm  %%<a name="2"></a></h2><p>Version V1.0 Date: Feb 15, 2015 Author: Zichao Wang</p><h2>Documentation<a name="3"></a></h2><p>This Function implements the MPM pitch detection algorithm by Dr. Pilip McLeod. You can read more about this algorithm in his paper titled "a smarter way to find pitch". The algorithm first calculates a normalized square difference function, and then find all local maxima, then threshold them, and use the first maxima as the key maxima. Its index is recorded as the pitch period. Using this pitch period, we are able to find the pitch of the sample.</p><h2>Input<a name="4"></a></h2><p>filename: The file name of your music. t:        start time of the sample. Should not be longer           than the total samples in your music file. W:        Window size to perform MPM algorithm. Typically           value is 2048. You can also use 512, 1024, 4096.</p><h2>Output<a name="5"></a></h2><p>f:    detected frequency (pitch) note: detected pitch in MIDI scale       (MIDI scale: <a href="http://newt.phys.unsw.edu.au/jw/notes.html">http://newt.phys.unsw.edu.au/jw/notes.html</a>) Also a plot of NSDF is generated.</p><pre class="codeinput"><span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+</pre><pre class="codeinput"><span class="keyword">function</span> [f,note] = MPM_pitch_detection(filename, t, W)
+</pre><pre class="codeinput">    [violin,fs] = audioread(filename);
+</pre><pre class="codeoutput error">Error using MPM_pitch_detection (line 30)
+Not enough input arguments.
+</pre><h2>initialize parameters and vectors<a name="8"></a></h2><pre class="codeinput">    <span class="comment">%W = 2048; % window size</span>
+    <span class="comment">%t = 50000; % start time of sample</span>
+    r_tau = zeros(1,W); <span class="comment">% initialize ACF</span>
+    m_tau = zeros(1,W); <span class="comment">% initialize SDF</span>
+    n_tau = zeros(1,W); <span class="comment">% initialize NSDF</span>
+</pre><h2>get a sample<a name="9"></a></h2><pre class="codeinput">    x = violin(t:W+t-1);
+</pre><h2>calculate NSDF (normalized square difference function)<a name="10"></a></h2><pre class="codeinput">    <span class="keyword">for</span> tau = 0:W-1
+       <span class="keyword">for</span> j = 1:1+W-tau-1
+          r_tau(tau+1) = r_tau(tau+1) + x(j)*x(j+tau); <span class="comment">% calculate ACF</span>
+          m_tau(tau+1) = m_tau(tau+1) + (x(j)^2+ x(j+tau)^2); <span class="comment">% calculate SDF</span>
+          n_tau(tau+1) = 2*r_tau(tau+1)/m_tau(tau+1); <span class="comment">% calculate NSDF</span>
+       <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre><h2>find local maxima<a name="11"></a></h2><pre class="codeinput">    MAX = max(n_tau); <span class="comment">% maximum correlation in NSDF (usually 1)</span>
+    k = 0.8; <span class="comment">% threshold parameter</span>
+    th = MAX*k; <span class="comment">% threshold for selecting key maximum</span>
+    idx = 2; <span class="comment">% starting index, excluding the first data point, which is 1</span>
+    max_idx = 0; <span class="comment">% the index of the key maximum. To be changed later</span>
+    temp = find(n_tau&lt;0); <span class="comment">% useful for finding index of first negative element</span>
+    local_max = zeros(1,W); <span class="comment">% local maximum in NSDF</span>
+    <span class="keyword">while</span> idx &lt; length(n_tau)-1 <span class="comment">% for each sample</span>
+        temp_max = 0;
+        <span class="keyword">while</span> n_tau(idx) &gt; 0 &amp;&amp; idx &lt; W &amp;&amp; idx &gt; temp(1) <span class="comment">% for sample starting from the second arising pattern</span>
+           <span class="keyword">if</span> n_tau(idx+1) &gt; n_tau(idx)
+               <span class="keyword">if</span> temp_max &lt; n_tau(idx+1)
+                   temp_max = n_tau(idx+1);
+               <span class="keyword">end</span>
+           <span class="keyword">end</span>
+           idx = idx + 1;
+        <span class="keyword">end</span>
+        max_idx = find(n_tau==temp_max);
+        local_max(max_idx) = temp_max;
+        idx = idx + 1;
+    <span class="keyword">end</span>
+</pre><h2>find pitch and fundamental frequency<a name="12"></a></h2><pre class="codeinput">    tau = find(local_max&gt;th); <span class="comment">% pitch period</span>
+    <span class="keyword">if</span> ~isempty(tau) <span class="comment">% check if there is a key maximum</span>
+        f = fs / tau(1); <span class="comment">% corresponding frequency</span>
+        note = log10(f/27.5)/log10(2^(1/12));
+    <span class="keyword">else</span>
+        f = -1;
+        note = -1;
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> note &lt; 0 <span class="comment">% deal with noise / no sound</span>
+        f = -1;
+        note = -1;
+    <span class="keyword">end</span>
+    plot(n_tau);
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Matlab Implementation of MPM pitch detection algorithm  %%
+% Version V1.0
+% Date: Feb 15, 2015
+% Author: Zichao Wang
+%% Documentation
+% This Function implements the MPM pitch detection algorithm
+% by Dr. Pilip McLeod. You can read more about this algorithm
+% in his paper titled "a smarter way to find pitch". The
+% algorithm first calculates a normalized square difference
+% function, and then find all local maxima, then threshold 
+% them, and use the first maxima as the key maxima. Its index
+% is recorded as the pitch period. Using this pitch period, we
+% are able to find the pitch of the sample.
+%% Input
+% filename: The file name of your music.
+% t:        start time of the sample. Should not be longer 
+%           than the total samples in your music file.
+% W:        Window size to perform MPM algorithm. Typically
+%           value is 2048. You can also use 512, 1024, 4096.
+%% Output
+% f:    detected frequency (pitch)
+% note: detected pitch in MIDI scale
+%       (MIDI scale: http://newt.phys.unsw.edu.au/jw/notes.html)
+% Also a plot of NSDF is generated.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+function [f,note] = MPM_pitch_detection(filename, t, W)
+
+    [violin,fs] = audioread(filename);
+
+    %% initialize parameters and vectors
+    %W = 2048; % window size
+    %t = 50000; % start time of sample
+    r_tau = zeros(1,W); % initialize ACF
+    m_tau = zeros(1,W); % initialize SDF
+    n_tau = zeros(1,W); % initialize NSDF
+    %%  get a sample
+    x = violin(t:W+t-1); 
+    %% calculate NSDF (normalized square difference function)
+    for tau = 0:W-1
+       for j = 1:1+W-tau-1
+          r_tau(tau+1) = r_tau(tau+1) + x(j)*x(j+tau); % calculate ACF
+          m_tau(tau+1) = m_tau(tau+1) + (x(j)^2+ x(j+tau)^2); % calculate SDF
+          n_tau(tau+1) = 2*r_tau(tau+1)/m_tau(tau+1); % calculate NSDF
+       end
+    end
+    %% find local maxima
+    MAX = max(n_tau); % maximum correlation in NSDF (usually 1)
+    k = 0.8; % threshold parameter
+    th = MAX*k; % threshold for selecting key maximum
+    idx = 2; % starting index, excluding the first data point, which is 1
+    max_idx = 0; % the index of the key maximum. To be changed later
+    temp = find(n_tau<0); % useful for finding index of first negative element
+    local_max = zeros(1,W); % local maximum in NSDF
+    while idx < length(n_tau)-1 % for each sample
+        temp_max = 0;
+        while n_tau(idx) > 0 && idx < W && idx > temp(1) % for sample starting from the second arising pattern
+           if n_tau(idx+1) > n_tau(idx)
+               if temp_max < n_tau(idx+1)
+                   temp_max = n_tau(idx+1); 
+               end
+           end
+           idx = idx + 1;
+        end
+        max_idx = find(n_tau==temp_max);
+        local_max(max_idx) = temp_max;
+        idx = idx + 1;
+    end
+    %% find pitch and fundamental frequency
+    tau = find(local_max>th); % pitch period
+    if ~isempty(tau) % check if there is a key maximum
+        f = fs / tau(1); % corresponding frequency
+        note = log10(f/27.5)/log10(2^(1/12));
+    else
+        f = -1;
+        note = -1;
+    end
+    if note < 0 % deal with noise / no sound
+        f = -1;
+        note = -1;
+    end
+    plot(n_tau);
+end
+##### SOURCE END #####
+--></body></html>

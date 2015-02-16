@@ -20,10 +20,17 @@
 %           value is 2048. You can also use 512, 1024, 4096.
 %% Output
 % f:    detected frequency (pitch)
-% note: detected pitch in MIDI scale (http://newt.phys.unsw.edu.au/jw/notes.html)
-% Also a plot of NSDF.
+% note: detected pitch in MIDI scale
+%       (MIDI scale: http://newt.phys.unsw.edu.au/jw/notes.html)
+% Also a plot of NSDF is generated.
+%% Example:
+% filename = '153597__carlos-vaquero__violin-g-5-tenuto-non-vibrato.wav';
+% t = 1;
+% W = 2048;
+% [f,note] = MPM_pitch_detection('153597__carlos-vaquero__violin-g-5-tenuto-non-vibrato.wav', 10000, 2048)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
+
 function [f,note] = MPM_pitch_detection(filename, t, W)
 
     [violin,fs] = audioread(filename);

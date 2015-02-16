@@ -23,8 +23,15 @@
 % note: detected pitch in MIDI scale
 %       (MIDI scale: http://newt.phys.unsw.edu.au/jw/notes.html)
 % Also a plot of NSDF is generated.
+%% Example:
+%  filename = '153597__carlos-vaquero__violin-g-5-tenuto-non-vibrato.wav';
+%  t = 1;
+%  W = 2048;
+%  [f,note] = MPM_pitch_detection('153597__carlos-vaquero__violin-g-5-...
+% tenuto-non-vibrato.wav', 10000, 2048)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
+
 function [f,note] = MPM_pitch_detection(filename, t, W)
 
     [violin,fs] = audioread(filename);
@@ -41,7 +48,7 @@ function [f,note] = MPM_pitch_detection(filename, t, W)
     for tau = 0:W-1
        for j = 1:1+W-tau-1
           r_tau(tau+1) = r_tau(tau+1) + x(j)*x(j+tau); % calculate ACF
-          m_tau(tau+1) = m_tau(tau+1) + (x(j)^2+ x(j+tau)^2); % calculate SDF
+          m_tau(tau+1) = m_tau(tau+1) + (x(j)^2+ x(j+tau)^2);%calculate SDF
           n_tau(tau+1) = 2*r_tau(tau+1)/m_tau(tau+1); % calculate NSDF
        end
     end
@@ -51,11 +58,12 @@ function [f,note] = MPM_pitch_detection(filename, t, W)
     th = MAX*k; % threshold for selecting key maximum
     idx = 2; % starting index, excluding the first data point, which is 1
     max_idx = 0; % the index of the key maximum. To be changed later
-    temp = find(n_tau<0); % useful for finding index of first negative element
+    temp = find(n_tau<0); % for finding index of first negative element
     local_max = zeros(1,W); % local maximum in NSDF
     while idx < length(n_tau)-1 % for each sample
         temp_max = 0;
-        while n_tau(idx) > 0 && idx < W && idx > temp(1) % for sample starting from the second arising pattern
+        while n_tau(idx) > 0 && idx < W && idx > temp(1) 
+        % for sample starting from the second arising pattern
            if n_tau(idx+1) > n_tau(idx)
                if temp_max < n_tau(idx+1)
                    temp_max = n_tau(idx+1); 
