@@ -34,7 +34,7 @@
 
 function [f,note] = MPM_pitch_detection(filename, t, W)
 
-    [violin,fs] = audioread(filename);
+    [violin,fs] = wavread(filename);
 
     %% initialize parameters and vectors
     %W = 2048; % window size
@@ -79,7 +79,8 @@ function [f,note] = MPM_pitch_detection(filename, t, W)
     tau = find(local_max>th); % pitch period
     if ~isempty(tau) % check if there is a key maximum
         f = fs / tau(1); % corresponding frequency
-        note = log10(f/27.5)/log10(2^(1/12));
+        %note = round(log10(f/27.5)/log10(2^(1/12)));
+        note = round((12 * log10(f/440)/log10(2)) + 69); % Convert to midi mappings
     else
         f = -1;
         note = -1;
