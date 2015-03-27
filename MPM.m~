@@ -79,13 +79,6 @@ function [F,NOTE] = MPM(filename, W)
     
     
 %% function to find the pitch of current sample
-% inputs: 
-%   x  -- current sample to perform pitch detection
-%   W  -- the window size
-%   fs -- sampling frequency
-% outputs:
-%   f    -- frequency estimation for this sample. single number
-%   note -- MIDI score estimation for this sample. single number
 function [f, note] = find_pitch(x,W,fs)
     % r_tau = zeros(1,W);                     % initialize ACF
     r_tau = autocorr(x',W-1); % Matlab built-in function for autocorrelation calculation
@@ -148,9 +141,9 @@ function [f, note] = find_pitch(x,W,fs)
     %plot(n_tau);
 
 %% function that generates guitar style sound using the pitch extrated 
-function guitarplayer(F,fs,t)
+function guitarplayer(F,fs)
 F = linspace(1/Fs, 1000, 2^12);
-x = zeros(Fs*t, 1);
+x = zeros(Fs*4, 1);
 delay = round(fs/F);
 
 b  = firls(42, [0 1/delay 2/delay 1], [0 0 1 1]);
